@@ -39,6 +39,7 @@
 --    - 2. Lex messages from treesitter
 --
 -- Log file can be found in stdpath('log')/treesitter.log
+vim.g.__ts_debug = 1
 
 local query = require('vim.treesitter.query')
 local language = require('vim.treesitter.language')
@@ -207,9 +208,11 @@ local function tcall(f, ...)
   return duration, unpack(r)
 end
 
+function LanguageTree:_log(...)
+end
 ---@private
 ---@param ... any
-function LanguageTree:_log(...)
+function LanguageTree:_log2(...)
   if not self._logger then
     return
   end
@@ -929,6 +932,7 @@ end
 ---@param metadata vim.treesitter.query.TSMetadata
 ---@return string?, boolean, Range6[]
 function LanguageTree:_get_injection(match, metadata)
+    self:_log2('AQUIIIII')
   local ranges = {} ---@type Range6[]
   local combined = metadata['injection.combined'] ~= nil
   local injection_lang = metadata['injection.language'] --[[@as string?]]
@@ -936,6 +940,7 @@ function LanguageTree:_get_injection(match, metadata)
     or metadata['injection.parent'] ~= nil and self._parent:lang()
     or (injection_lang and resolve_lang(injection_lang))
   local include_children = metadata['injection.include-children'] ~= nil
+    self:_log2('bruh', metadata)
 
   for id, nodes in pairs(match) do
     for _, node in ipairs(nodes) do
@@ -943,6 +948,7 @@ function LanguageTree:_get_injection(match, metadata)
       -- Lang should override any other language tag
       if name == 'injection.language' then
         local text = vim.treesitter.get_node_text(node, self._source, { metadata = metadata[id] })
+        self:_log2('Language', name, text)
         lang = resolve_lang(text:lower()) -- language names are always lower case
       elseif name == 'injection.filename' then
         local text = vim.treesitter.get_node_text(node, self._source, { metadata = metadata[id] })
